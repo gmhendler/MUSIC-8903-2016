@@ -11,7 +11,7 @@ static const char*  kCMyProjectBuildDate             = __DATE__;
 
 CMyProject::CMyProject ()
 {
-    // this never hurts
+    // this never hurts THIS HURTS MY BRAINSLOL
     this->reset ();
 }
 
