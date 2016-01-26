@@ -102,7 +102,7 @@ Error_t CMyProject::reset ()
 Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)
 {
     
-    if (filterType.compare("FIR")) {
+    if (filterType.compare("FIR")==0) {
     
     for (int n = 0; n < iNumberOfFrames; n++)
     {
@@ -127,7 +127,7 @@ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, in
         }
     
     }
-    }else if (filterType.compare("IIR")) {
+    }else if (filterType.compare("IIR")==0) {
             
             for (int n = 0; n < iNumberOfFrames; n++)
             {
@@ -157,17 +157,8 @@ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, in
         return kUnknownError;
         
     }
-    /*
-     x=zeros(100,1);x(1)=1; % unit impulse signal of length 100
-     g=0.5;
-     Delayline=zeros(10,1); % memory allocation for length 10
-     for n=1:length(x);
-     y(n)=x(n)+g*Delayline(10);
-     Delayline=[y(n);Delayline(1:10-1)];
-     end;
-     */
+   
     
-    //ppfOutputBuffer = ppfInputBuffer;
     
     return kNoError;
 

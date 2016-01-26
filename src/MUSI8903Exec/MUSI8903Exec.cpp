@@ -118,7 +118,9 @@ int main(int argc, char* argv[])
          error = pMyProject->process(ppfAudioData, ppfAudioData, iNumFrames, filterType);
         
         if(error!=kNoError)
-        {cout<< "Error: Invalid filter specification" <<endl;}
+        {cout<< "Error: Invalid filter specification" <<endl;
+            break;
+        }
         
         for (int i = 0; i < iNumFrames; i++)
         {

@@ -3,6 +3,7 @@
 
 #include "ErrorDef.h"
 #include <iostream>
+#include <cstring>
 
 class CMyProject
 {
