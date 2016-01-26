@@ -33,15 +33,20 @@ int main(int argc, char* argv[])
    
     CAudioFileIf::FileSpec_t stFileSpec;
     
-    std::fstream            hOutputFile;    // TODO FIND TXT FILE LATER FOR OUTPUT
-
+    std::fstream            hOutputFile;
+    
+    std::fstream            hInputFile;
+    
+    std::string             filterType;
+    
+    Error_t                     error;
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
     
-    if (argc < 2)
+    if (argc < 3)
     {
         return -1;
     }
@@ -49,6 +54,8 @@ int main(int argc, char* argv[])
     {
         sInputFilePath  = argv[1];
         sOutputFilePath = sInputFilePath + ".txt";
+        filterType      = argv[2];
+        
     }
     
     //////////////////////////////////////////////////////////////////////////////
@@ -63,6 +70,23 @@ int main(int argc, char* argv[])
     }
     
     phAudioFile->getFileSpec(stFileSpec);
+    
+    //////////////////////////////////////////////////////////////////////////////
+    // write to text files
+    
+    hOutputFile.open (sOutputFilePath.c_str(), std::ios::out);
+    if (!hOutputFile.is_open())
+    {
+        cout << "Text file open error!";
+        return -1;
+    }
+/*
+    hOutputFile.open (sOutputFilePath.c_str(), std::ios::out);
+    if (!hOutputFile.is_open())
+    {
+        cout << "Text file open error!";
+        return -1;
+    }*/
 
     //////////////////////////////////////////////////////////////////////////////
     // get audio info and print it to stdout
@@ -71,12 +95,12 @@ int main(int argc, char* argv[])
     cout << "Number of channels: " << stFileSpec.iNumChannels << endl;
     cout << "Length of file in seconds: " << phAudioFile->getLength(iInFileLength) << endl;
     cout << "Sample rate: " << stFileSpec.fSampleRateInHz << endl;
-    cout << "File location: " << sInputFilePath;
+    cout << "File location: " << sInputFilePath << endl;
     
     
     //////////////////////////////////////////////////////////////////////////////
     // do processing
-    cout << "Hello there!" << endl << endl;
+    cout << "Processing data is fun!" << endl << endl;
     CMyProject::create(pMyProject);
     pMyProject->init(stFileSpec.iNumChannels);
     
@@ -91,7 +115,10 @@ int main(int argc, char* argv[])
         long long iNumFrames = kBlockSize;
         phAudioFile->readData(ppfAudioData, iNumFrames);
         
-        pMyProject->process(ppfAudioData, ppfAudioData, iNumFrames);
+         error = pMyProject->process(ppfAudioData, ppfAudioData, iNumFrames, filterType);
+        
+        if(error!=kNoError)
+        {cout<< "Error: Invalid filter specification" <<endl;}
         
         for (int i = 0; i < iNumFrames; i++)
         {

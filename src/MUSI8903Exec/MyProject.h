@@ -2,6 +2,7 @@
 #define __MyProject_hdr__
 
 #include "ErrorDef.h"
+#include <iostream>
 
 class CMyProject
 {
@@ -25,11 +26,13 @@ public:
     Error_t init (int numChannels);
     Error_t reset ();
     
-    virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
+    virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType);
     
     float g = 0.5;
     
     float **buffer;
+    
+    int numChan;
 
 protected:
     CMyProject ();

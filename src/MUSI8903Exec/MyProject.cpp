@@ -79,6 +79,10 @@ Error_t CMyProject::init(int numChannels)
 
     // initialize variables and buffers
     
+    g = .5;
+    
+    numChan = numChannels;
+    
     buffer = new float* [numChannels];
     for (int i = 0; i < numChannels; i++)
         buffer[i] = new float [10];
@@ -95,18 +99,75 @@ Error_t CMyProject::reset ()
     return kNoError;
 }
 
- Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
+Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)
 {
-
+    
+    if (filterType.compare("FIR")) {
+    
+    for (int n = 0; n < iNumberOfFrames; n++)
+    {
+        
+        for (int c = 0; c < numChan; c++)
+        {
+            
+            ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+        
+            for (int i = 9; i >= 0; i--)
+            {
+            
+                if (i == 0)
+                {
+                    buffer[c][i] = ppfInputBuffer[c][n];
+                }
+                else
+                {
+                    buffer[c][i] = buffer[c][i-1];
+                }
+            }
+        }
+    
+    }
+    }else if (filterType.compare("IIR")) {
+            
+            for (int n = 0; n < iNumberOfFrames; n++)
+            {
+                
+                for (int c = 0; c < numChan; c++)
+                {
+                    
+                    ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+                    
+                    for (int i = 9; i >= 0; i--)
+                    {
+                        
+                        if (i == 0)
+                        {
+                            buffer[c][i] = ppfOutputBuffer[c][n];
+                        }
+                        else
+                        {
+                            buffer[c][i] = buffer[c][i-1];
+                        }
+                    }
+                }
+                
+            }
+        }
+    else{
+        return kUnknownError;
+        
+    }
     /*
-    Delayline=zeros(10,1);% memory allocation for length 10
-        for n=1:length(x);
-    y(n)=x(n)+g*Delayline(10);
-    Delayline=[x(n);Delayline(1:10-1)];
-    end;
+     x=zeros(100,1);x(1)=1; % unit impulse signal of length 100
+     g=0.5;
+     Delayline=zeros(10,1); % memory allocation for length 10
+     for n=1:length(x);
+     y(n)=x(n)+g*Delayline(10);
+     Delayline=[y(n);Delayline(1:10-1)];
+     end;
      */
     
-    ppfOutputBuffer = ppfInputBuffer;
+    //ppfOutputBuffer = ppfInputBuffer;
     
     return kNoError;
 
