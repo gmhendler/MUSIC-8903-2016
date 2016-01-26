@@ -9,9 +9,9 @@ public:
     /*! version number */
     enum Version_t
     {
-        kMajor,                         //!< major version number
-        kMinor,                         //!< minor version number
-        kPatch,                         //!< patch version number
+        //kMajor,                         //!< major version number
+        //kMinor,                         //!< minor version number
+        //kPatch,                         //!< patch version number
 
         kNumVersionInts
     };
@@ -22,10 +22,14 @@ public:
     static Error_t create (CMyProject*& pCKortIf);
     static Error_t destroy (CMyProject*& pCKortIf);
     
-    Error_t init (/*enter parameters here*/);
+    Error_t init (int numChannels);
     Error_t reset ();
     
-    //virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames) = 0;
+    virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
+    
+    float g = 0.5;
+    
+    float **buffer;
 
 protected:
     CMyProject ();

@@ -11,7 +11,7 @@ static const char*  kCMyProjectBuildDate             = __DATE__;
 
 CMyProject::CMyProject ()
 {
-    // this never hurts THIS HURTS MY BRAINSLOL
+    // this never hurts
     this->reset ();
 }
 
@@ -25,7 +25,7 @@ const int  CMyProject::getVersion (const Version_t eVersionIdx)
 {
     int iVersion = 0;
 
-    switch (eVersionIdx)
+    /*switch (eVersionIdx)
     {
     case kMajor:
         iVersion    = MyProject_VERSION_MAJOR; 
@@ -39,7 +39,7 @@ const int  CMyProject::getVersion (const Version_t eVersionIdx)
     case kNumVersionInts:
         iVersion    = -1;
         break;
-    }
+    }*/
 
     return iVersion;
 }
@@ -73,11 +73,17 @@ Error_t CMyProject::destroy (CMyProject*& pCMyProject)
 
 }
 
-Error_t CMyProject::init()
+Error_t CMyProject::init(int numChannels)
 {
     // allocate memory
 
     // initialize variables and buffers
+    
+    buffer = new float* [numChannels];
+    for (int i = 0; i < numChannels; i++)
+        buffer[i] = new float [10];
+    
+    
 
     return kNoError;
 }
@@ -88,3 +94,24 @@ Error_t CMyProject::reset ()
 
     return kNoError;
 }
+
+ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
+{
+
+    /*
+    Delayline=zeros(10,1);% memory allocation for length 10
+        for n=1:length(x);
+    y(n)=x(n)+g*Delayline(10);
+    Delayline=[x(n);Delayline(1:10-1)];
+    end;
+     */
+    
+    ppfOutputBuffer = ppfInputBuffer;
+    
+    return kNoError;
+
+}
+
+
+
+
