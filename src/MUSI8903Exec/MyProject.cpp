@@ -64,7 +64,7 @@ Error_t CMyProject::destroy (CMyProject*& pCMyProject)
     if (!pCMyProject)
         return kUnknownError;
     
-    pCMyProject->reset ();
+    pCMyProject->reset ();   //COMEBACK HERE AND DELETE BUFFER
     
     delete pCMyProject;
     pCMyProject = 0;
@@ -94,7 +94,7 @@ Error_t CMyProject::init(int numChannels, float gain) //add delay
 
 Error_t CMyProject::reset ()
 {
-    // reset buffers and variables to default values
+    // reset buffers and variables to default values // DO SOMETHING HERE DOOFUS
 
     return kNoError;
 }

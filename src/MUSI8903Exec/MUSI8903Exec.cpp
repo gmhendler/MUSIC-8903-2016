@@ -27,6 +27,8 @@ int main(int argc, char* argv[])
 
     float                   **ppfAudioData      = 0;
     
+    float                   **ppfAudioDataOut   = 0;
+    
     CAudioFileIf            *phAudioFile        = 0;
     
     CMyProject              *pMyProject          = 0;
@@ -106,8 +108,13 @@ int main(int argc, char* argv[])
     ppfAudioData = new float* [stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float [kBlockSize];
+   
     time = clock();
     
+    
+    ppfAudioDataOut = new float* [stFileSpec.iNumChannels];
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        ppfAudioDataOut[i] = new float [kBlockSize];
     
     
     while (!phAudioFile->isEof())
@@ -115,7 +122,7 @@ int main(int argc, char* argv[])
         long long iNumFrames = kBlockSize;
         phAudioFile->readData(ppfAudioData, iNumFrames);
         
-         error = pMyProject->process(ppfAudioData, ppfAudioData, iNumFrames, filterType);
+         error = pMyProject->process(ppfAudioData, ppfAudioDataOut, iNumFrames, filterType);
         
         if(error!=kNoError)
         {cout<< "Error: Invalid filter specification" <<endl;
@@ -126,7 +133,7 @@ int main(int argc, char* argv[])
         {
             for (int c = 0; c < stFileSpec.iNumChannels; c++)
             {
-                hOutputFile << ppfAudioData[c][i] << "\t";
+                hOutputFile << ppfAudioDataOut[c][i] << "\t";
             }
             hOutputFile << endl;
         }
