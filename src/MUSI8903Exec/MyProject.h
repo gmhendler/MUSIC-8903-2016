@@ -24,7 +24,7 @@ public:
     static Error_t create (CMyProject*& pCKortIf);
     static Error_t destroy (CMyProject*& pCKortIf);
     
-    Error_t init (int numChannels);
+    Error_t init (int numChannels, float gain);
     Error_t reset ();
     
     virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType);

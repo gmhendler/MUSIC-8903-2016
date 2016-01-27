@@ -73,13 +73,13 @@ Error_t CMyProject::destroy (CMyProject*& pCMyProject)
 
 }
 
-Error_t CMyProject::init(int numChannels)
+Error_t CMyProject::init(int numChannels, float gain) //add delay
 {
     // allocate memory
 
     // initialize variables and buffers
     
-    g = .5;
+    g = gain;
     
     numChan = numChannels;
     
@@ -99,66 +99,68 @@ Error_t CMyProject::reset ()
     return kNoError;
 }
 
-Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)
+Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)    //use delay here
 {
     
     if (filterType.compare("FIR")==0) {
     
-    for (int n = 0; n < iNumberOfFrames; n++)
-    {
-        
-        for (int c = 0; c < numChan; c++)
+        for (int n = 0; n < iNumberOfFrames; n++)
         {
-            
-            ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
         
-            for (int i = 9; i >= 0; i--)
+            for (int c = 0; c < numChan; c++)
             {
             
-                if (i == 0)
+                ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+        
+                for (int i = 9; i >= 0; i--)
                 {
-                    buffer[c][i] = ppfInputBuffer[c][n];
-                }
-                else
-                {
-                    buffer[c][i] = buffer[c][i-1];
-                }
-            }
-        }
-    
-    }
-    }else if (filterType.compare("IIR")==0) {
             
-            for (int n = 0; n < iNumberOfFrames; n++)
-            {
-                
-                for (int c = 0; c < numChan; c++)
-                {
-                    
-                    ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
-                    
-                    for (int i = 9; i >= 0; i--)
+                    if (i == 0)
                     {
-                        
-                        if (i == 0)
-                        {
-                            buffer[c][i] = ppfOutputBuffer[c][n];
-                        }
-                        else
-                        {
-                            buffer[c][i] = buffer[c][i-1];
-                        }
+                        buffer[c][i] = ppfInputBuffer[c][n];
+                    }
+                    else
+                    {
+                        buffer[c][i] = buffer[c][i-1];
                     }
                 }
-                
             }
+    
         }
-    else{
+        //ppfOutputBuffer = ppfInputBuffer;
+
+    }
+    else if (filterType.compare("IIR")==0) {
+            
+                for (int n = 0; n < iNumberOfFrames; n++)
+                {
+                
+                    for (int c = 0; c < numChan; c++)
+                    {
+                    
+                        ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+                    
+                        for (int i = 9; i >= 0; i--)
+                        {
+                        
+                            if (i == 0)
+                            {
+                                buffer[c][i] = ppfOutputBuffer[c][n];
+                            }
+                            else
+                            {
+                                buffer[c][i] = buffer[c][i-1];
+                            }
+                        }
+                    }
+                
+                }
+    }
+    else
+    {
         return kUnknownError;
-        
     }
    
-    
     
     return kNoError;
 

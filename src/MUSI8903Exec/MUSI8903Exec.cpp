@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     std::string             sInputFilePath,                 //!< file paths
                             sOutputFilePath;
 
-    long long               iInFileLength       = 0;        //!< length of input file
+    double               iInFileLength       = 0;        //!< length of input file
 
     clock_t                 time                = 0;
     
@@ -39,14 +39,16 @@ int main(int argc, char* argv[])
     
     std::string             filterType;
     
-    Error_t                     error;
+    Error_t                 error;
+    
+    float                   gain;
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
     
-    if (argc < 3)
+    if (argc < 4)
     {
         return -1;
     }
@@ -55,6 +57,7 @@ int main(int argc, char* argv[])
         sInputFilePath  = argv[1];
         sOutputFilePath = sInputFilePath + ".txt";
         filterType      = argv[2];
+        gain            = std::stof (argv[3]);
         
     }
     
@@ -80,20 +83,15 @@ int main(int argc, char* argv[])
         cout << "Text file open error!";
         return -1;
     }
-/*
-    hOutputFile.open (sOutputFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open())
-    {
-        cout << "Text file open error!";
-        return -1;
-    }*/
+
 
     //////////////////////////////////////////////////////////////////////////////
     // get audio info and print it to stdout
 
     
     cout << "Number of channels: " << stFileSpec.iNumChannels << endl;
-    cout << "Length of file in seconds: " << phAudioFile->getLength(iInFileLength) << endl;
+    phAudioFile->getLength(iInFileLength);
+    cout << "Length of file in seconds: " << iInFileLength << endl;
     cout << "Sample rate: " << stFileSpec.fSampleRateInHz << endl;
     cout << "File location: " << sInputFilePath << endl;
     
@@ -102,13 +100,15 @@ int main(int argc, char* argv[])
     // do processing
     cout << "Processing data is fun!" << endl << endl;
     CMyProject::create(pMyProject);
-    pMyProject->init(stFileSpec.iNumChannels);
+    pMyProject->init(stFileSpec.iNumChannels, gain);
     
     //allocate memory
     ppfAudioData = new float* [stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float [kBlockSize];
     time = clock();
+    
+    
     
     while (!phAudioFile->isEof())
     {
