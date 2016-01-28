@@ -12,7 +12,7 @@ static const char*  kCMyProjectBuildDate             = __DATE__;
 CMyProject::CMyProject ()
 {
     // this never hurts
-    this->reset ();
+    //this->reset ();
 }
 
 
@@ -64,7 +64,8 @@ Error_t CMyProject::destroy (CMyProject*& pCMyProject)
     if (!pCMyProject)
         return kUnknownError;
     
-    pCMyProject->reset ();   //COMEBACK HERE AND DELETE BUFFER
+//pCMyProject->reset ();
+    
     
     delete pCMyProject;
     pCMyProject = 0;
@@ -73,7 +74,7 @@ Error_t CMyProject::destroy (CMyProject*& pCMyProject)
 
 }
 
-Error_t CMyProject::init(int numChannels, float gain) //add delay
+Error_t CMyProject::init(int numChannels, float gain, int delay) //add delay
 {
     // allocate memory
 
@@ -83,9 +84,11 @@ Error_t CMyProject::init(int numChannels, float gain) //add delay
     
     numChan = numChannels;
     
-    buffer = new float* [numChannels];
-    for (int i = 0; i < numChannels; i++)
-        buffer[i] = new float [10];
+    dly = delay;
+    
+    buffer = new float* [numChan];
+    for (int i = 0; i < numChan; i++)
+        buffer[i] = new float [dly];
     
     
 
@@ -94,12 +97,22 @@ Error_t CMyProject::init(int numChannels, float gain) //add delay
 
 Error_t CMyProject::reset ()
 {
-    // reset buffers and variables to default values // DO SOMETHING HERE DOOFUS
+    // reset buffers and variables to default values
+    for (int i = 0; i < numChan; i++){
+        delete [] buffer[i];
 
+    }
+    delete [] buffer;
+    buffer=0;
+
+    g = 0;
+    
+    dly = 0;
+    
     return kNoError;
 }
 
-Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)    //use delay here
+Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType)
 {
     
     if (filterType.compare("FIR")==0) {
@@ -110,9 +123,9 @@ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, in
             for (int c = 0; c < numChan; c++)
             {
             
-                ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+                ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][dly-1];
         
-                for (int i = 9; i >= 0; i--)
+                for (int i = dly-1; i >= 0; i--)
                 {
             
                     if (i == 0)
@@ -127,7 +140,6 @@ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, in
             }
     
         }
-        //ppfOutputBuffer = ppfInputBuffer;
 
     }
     else if (filterType.compare("IIR")==0) {
@@ -138,9 +150,9 @@ Error_t CMyProject::process (float **ppfInputBuffer, float **ppfOutputBuffer, in
                     for (int c = 0; c < numChan; c++)
                     {
                     
-                        ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][9];
+                        ppfOutputBuffer[c][n] = ppfInputBuffer[c][n] + g * buffer[c][dly-1];
                     
-                        for (int i = 9; i >= 0; i--)
+                        for (int i = dly-1; i >= 0; i--)
                         {
                         
                             if (i == 0)

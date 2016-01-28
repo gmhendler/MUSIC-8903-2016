@@ -24,12 +24,14 @@ public:
     static Error_t create (CMyProject*& pCKortIf);
     static Error_t destroy (CMyProject*& pCKortIf);
     
-    Error_t init (int numChannels, float gain);
+    Error_t init (int numChannels, float gain, int delay);
     Error_t reset ();
     
     virtual Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames, std::string filterType);
     
-    float g = 0.5;
+    float g;
+    
+    int dly;  //delay
     
     float **buffer;
     

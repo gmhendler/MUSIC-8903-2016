@@ -1,16 +1,27 @@
 
 #include <iostream>
 #include <ctime>
+#include <math.h>
 
 #include "MUSI8903Config.h"
 #include "MyProject.h"
 #include "AudioFileIf.h"
-
 using std::cout;
 using std::endl;
 
+#define pi 3.14159
+
+
 // local function declarations
 void    showClInfo ();
+void    singen();
+void    sinIIRtest();
+
+
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 // main function
@@ -23,7 +34,7 @@ int main(int argc, char* argv[])
 
     clock_t                 time                = 0;
     
-    static const int        kBlockSize          = 1024;
+    int                     kBlockSize;
 
     float                   **ppfAudioData      = 0;
     
@@ -44,14 +55,26 @@ int main(int argc, char* argv[])
     Error_t                 error;
     
     float                   gain;
+    
+    int                     delay;
+    
+    float                   **sine;
+    
+    float                   **sineOut;
+    
+    float                   **zeros;
+    
+    float                   **zerosOut;
+    
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
     
-    if (argc < 4)
+    if (argc < 6)
     {
+        cout << "Not enough args" << endl;
         return -1;
     }
     else
@@ -60,6 +83,13 @@ int main(int argc, char* argv[])
         sOutputFilePath = sInputFilePath + ".txt";
         filterType      = argv[2];
         gain            = std::stof (argv[3]);
+        delay           = std::stof (argv[4]);
+        kBlockSize      = std::stof (argv[5]);
+        if (delay>kBlockSize)
+        {
+            cout << "Delay cannot be longer than block size" << endl;
+            return -1;
+        }
         
     }
     
@@ -99,10 +129,184 @@ int main(int argc, char* argv[])
     
     
     //////////////////////////////////////////////////////////////////////////////
-    // do processing
+    // do testing
     cout << "Processing data is fun!" << endl << endl;
     CMyProject::create(pMyProject);
-    pMyProject->init(stFileSpec.iNumChannels, gain);
+    
+    
+    pMyProject->init(1, 1, 10);
+    
+    
+    //sine test
+    sine = new float* [1];
+    sine[0] = new float [4096];
+    
+    sineOut = new float* [1];
+    sineOut[0] = new float [4096];
+    
+    int fs= 44100;
+    for (int i =0; i<4096;i++){
+        sine[0][i] = sin(2 *pi*2205*i/fs );
+    }
+    
+    error = pMyProject->process(sine, sineOut, 4096, "FIR");
+    
+    for (int i = delay; i < 4096; i++)
+    {
+        
+        
+        if(sineOut[0][i] >0.00001 || sineOut[0][i]<-0.00001){
+            cout << "sine test FIR FAILED" << endl;
+            return kUnknownError;
+        }
+    }
+    
+    cout << "sine FIR test PASSED" << endl;
+    
+    delete [] sine[0];
+    delete [] sineOut[0];
+    
+    pMyProject->reset();
+    
+    
+    pMyProject->init(1, 1, 10);
+    
+    sine = new float* [1];
+    sine[0] = new float [4096];
+    
+    sineOut = new float* [1];
+    sineOut[0] = new float [4096];
+    
+    for (int i =0; i<4096;i++){
+        sine[0][i] = sin(2 *pi*4410*i/fs );
+    }
+    
+    error = pMyProject->process(sine, sineOut, 4096, "FIR");
+    
+    int sinSum = 0;
+    int sinOutSum = 0;
+    
+    for (int i = 0; i < 4096; i++)
+    {
+        sinSum = sinSum + fabs(sine[0][i]);
+        sinOutSum = sinOutSum + fabs(sineOut[0][i]);
+        
+        if(sinSum > sinOutSum){
+            cout << "sine IIR test FAILED" << endl;
+            return kUnknownError;
+        }
+    }
+    
+    cout << "sine IIR test PASSED" << endl;
+    
+    delete [] sine[0];
+    delete [] sineOut[0];
+    
+    pMyProject->reset();
+    //END SINE TEST
+    
+    //zero input test
+    pMyProject->init(1, 1, 10);
+    
+    zeros = new float* [1];
+    zeros[0] = new float [4096];
+    
+    zerosOut = new float* [1];
+    zerosOut[0] = new float [4096];
+    
+    for (int i =0; i<4096;i++){
+        zeros[0][i] = 0;
+    }
+    
+    error = pMyProject->process(zeros, zerosOut, 4096, "IIR");
+    
+    int zerosOutSum = 0;
+    
+    for (int i = 0; i < 4096; i++)
+    {
+        zerosOutSum = zerosOutSum + fabs(zerosOut[0][i]);
+        
+        if(zerosOutSum > 0){
+            cout << "zero input IIR test FAILED" << endl;
+            return kUnknownError;
+        }
+    }
+    
+    cout << "zero input IIR test PASSED" << endl;
+    
+    delete [] zeros[0];
+    delete [] zerosOut[0];
+    
+    pMyProject->reset();
+    
+    pMyProject->init(1, 1, 10);
+    
+    zeros = new float* [1];
+    zeros[0] = new float [4096];
+    
+    zerosOut = new float* [1];
+    zerosOut[0] = new float [4096];
+    
+    for (int i =0; i<4096;i++){
+        zeros[0][i] = 0;
+    }
+    
+    error = pMyProject->process(zeros, zerosOut, 4096, "FIR");
+    
+    zerosOutSum = 0;
+    
+    for (int i = 0; i < 4096; i++)
+    {
+        zerosOutSum = zerosOutSum + fabs(zerosOut[0][i]);
+        
+        if(zerosOutSum > 0){
+            cout << "zero input FIR test FAILED" << endl;
+            return kUnknownError;
+        }
+    }
+    
+    cout << "zero input FIR test PASSED" << endl;
+    
+    delete [] zeros[0];
+    delete [] zerosOut[0];
+    
+    pMyProject->reset();
+    // end zero input test
+    
+    // no gain test
+    // ensure signal is unaffect if the filter is at zero gain
+    pMyProject->init(1, 0, 10);
+    
+    sine = new float* [1];
+    sine[0] = new float [4096];
+    
+    sineOut = new float* [1];
+    sineOut[0] = new float [4096];
+    
+    for (int i =0; i<4096;i++){
+        sine[0][i] = sin(2 *pi*4410*i/fs );
+    }
+    
+    error = pMyProject->process(sine, sineOut, 4096, "FIR");
+    
+    for (int i = 0; i < 4096; i++)
+    {
+        if(sine[0][i] != sineOut[0][i]){
+            cout << "no gain test FAILED" << endl;
+            return kUnknownError;
+        }
+    }
+    
+    cout << "no gain test PASSED" << endl;
+    
+    delete [] sine[0];
+    delete [] sineOut[0];
+    
+    pMyProject->reset();
+    //END no Gain Test
+    
+    
+    pMyProject->init(stFileSpec.iNumChannels, gain, delay);
     
     //allocate memory
     ppfAudioData = new float* [stFileSpec.iNumChannels];
@@ -116,7 +320,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioDataOut[i] = new float [kBlockSize];
     
-    
+    //do processing
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
@@ -145,20 +349,34 @@ int main(int argc, char* argv[])
     
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
-
+    
     CAudioFileIf::destroy(phAudioFile);
     hOutputFile.close();
     
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    CMyProject::destroy(pMyProject);
+    
+    for (int i = 0; i < stFileSpec.iNumChannels; i++){
         delete [] ppfAudioData[i];
+        delete [] ppfAudioDataOut[i];
+    }
     delete [] ppfAudioData;
+    delete [] ppfAudioDataOut;
     ppfAudioData = 0;
-    
-    
-    
+    ppfAudioDataOut = 0;
     return 0;
     
 }
+
+void singen(float* sine)
+{
+    sine = new float [4096];
+    int fs= 44100;
+    for (int i =0; i<=4096;i++){
+        sine[i] = sin(2 *pi*2205*i/fs );
+    }
+    
+}
+
 
 
 void     showClInfo()
